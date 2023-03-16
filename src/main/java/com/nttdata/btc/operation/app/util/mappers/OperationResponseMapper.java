@@ -10,6 +10,11 @@ import org.mapstruct.Named;
 import static com.nttdata.btc.operation.app.util.enums.CategoryOperationEnum.findOperationCategory;
 import static com.nttdata.btc.operation.app.util.enums.TypeOperationEnum.findOperationType;
 
+/**
+ * Class interface mapper OperationResponseMapper.
+ *
+ * @author lrs
+ */
 @Mapper
 public interface OperationResponseMapper {
 
