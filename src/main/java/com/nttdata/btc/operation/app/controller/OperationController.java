@@ -34,10 +34,22 @@ public class OperationController {
      * @return {@link OperationResponse}
      */
     @GetMapping("id/{id}")
-    public Mono<ResponseEntity<OperationResponse>> findProductById(@PathVariable final String id) {
+    public Mono<ResponseEntity<OperationResponse>> findOperationById(@PathVariable final String id) {
         return service.findById(id)
                 .map(c -> new ResponseEntity<>(c, HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Service find by source account.
+     *
+     * @param code {@link String}
+     * @return {@link OperationResponse}
+     */
+    @GetMapping("code/{code}")
+    public Flux<OperationResponse> findOperationBySourceAcc(@PathVariable final String code) {
+        log.info("Start findOperationBySourceAcc.");
+        return service.findBySourceAcc(code);
     }
 
     /**

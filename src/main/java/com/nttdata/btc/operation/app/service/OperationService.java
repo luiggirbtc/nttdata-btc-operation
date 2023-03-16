@@ -23,6 +23,11 @@ public interface OperationService {
     Mono<OperationResponse> findById(String id);
 
     /**
+     * Method findBySourceAcc.
+     */
+    Flux<OperationResponse> findBySourceAcc(String code);
+
+    /**
      * Method save.
      */
     Mono<OperationResponse> save(OperationRequest request);

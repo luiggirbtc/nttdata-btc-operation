@@ -6,17 +6,24 @@ import com.nttdata.btc.operation.app.model.request.UpdateOperationRequest;
 import com.nttdata.btc.operation.app.model.response.OperationResponse;
 import com.nttdata.btc.operation.app.repository.OperationRepository;
 import com.nttdata.btc.operation.app.service.OperationService;
+import com.nttdata.btc.operation.app.util.mappers.OperationResponseMapper;
 
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+
+import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.nttdata.btc.operation.app.util.constant.Constants.DEFAULT_FALSE;
+import static com.nttdata.btc.operation.app.util.constant.Constants.DEFAULT_MESSAGE_ERROR;
 import static com.nttdata.btc.operation.app.util.enums.CategoryOperationEnum.findOperationCategory;
 import static com.nttdata.btc.operation.app.util.enums.TypeOperationEnum.findOperationType;
 
@@ -25,6 +32,7 @@ import static com.nttdata.btc.operation.app.util.enums.TypeOperationEnum.findOpe
  *
  * @author lrs
  */
+@Slf4j
 @Service
 public class OperationServiceImpl implements OperationService {
     /**
@@ -32,6 +40,12 @@ public class OperationServiceImpl implements OperationService {
      */
     @Autowired
     private OperationRepository repository;
+
+    /**
+     * Reference interface OperationResponseMapper.
+     */
+    private OperationResponseMapper operationMapper = Mappers.getMapper(OperationResponseMapper.class);
+
 
     /**
      * This method return all operations.
@@ -42,7 +56,7 @@ public class OperationServiceImpl implements OperationService {
     public Flux<OperationResponse> findAll() {
         return repository.findAll().filter(Operation::isStatus)
                 .map(c -> buildOperationR.apply(c))
-                .onErrorReturn(new OperationResponse());
+                .onErrorResume(e -> Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
     }
 
     /**
@@ -56,7 +70,20 @@ public class OperationServiceImpl implements OperationService {
         return repository.findById(id)
                 .filter(Operation::isStatus)
                 .map(e -> buildOperationR.apply(e))
-                .onErrorReturn(new OperationResponse());
+                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
+    }
+
+    /**
+     * Method findBySourceAccount.
+     *
+     * @param code {@link String}
+     */
+    @Override
+    public Flux<OperationResponse> findBySourceAcc(String code) {
+        log.info("Start impl findBySourceAcc :: " + code);
+        return repository.findBy(code)
+                .map(entity -> operationMapper.toResponse(entity))
+                .onErrorResume(e -> Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
     }
 
     /**
@@ -69,7 +96,7 @@ public class OperationServiceImpl implements OperationService {
     public Mono<OperationResponse> save(OperationRequest request) {
         return repository.save(buildOperation.apply(request))
                 .flatMap(entity -> Mono.just(buildOperationR.apply(entity)))
-                .onErrorReturn(new OperationResponse());
+                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
     }
 
     /**
@@ -82,7 +109,8 @@ public class OperationServiceImpl implements OperationService {
     public Mono<Void> delete(String id) {
         return repository.findById(id).filter(Operation::isStatus)
                 .map(e -> updateStatus.apply(e, DEFAULT_FALSE))
-                .flatMap(e -> repository.delete(e));
+                .flatMap(e -> repository.delete(e))
+                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
     }
 
     /**
@@ -97,7 +125,7 @@ public class OperationServiceImpl implements OperationService {
                 .map(entity -> updateOperation.apply(request, entity))
                 .flatMap(operation -> repository.save(operation))
                 .flatMap(aupdated -> Mono.just(buildOperationR.apply(aupdated)))
-                .onErrorReturn(new OperationResponse());
+                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
     }
 
     /**

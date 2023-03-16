@@ -12,6 +12,7 @@ import java.util.Date;
  *
  * @author lrs
  */
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

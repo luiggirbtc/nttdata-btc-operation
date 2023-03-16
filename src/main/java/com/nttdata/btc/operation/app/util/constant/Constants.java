@@ -10,4 +10,5 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class Constants {
     public static final Boolean DEFAULT_FALSE = false;
+    public static final String DEFAULT_MESSAGE_ERROR = "Error not found.";
 }

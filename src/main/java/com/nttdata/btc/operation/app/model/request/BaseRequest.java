@@ -1,5 +1,6 @@
 package com.nttdata.btc.operation.app.model.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Setter
 @Getter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseRequest {
     /*
      * 1 - Transacción, 2 - Transferencia, 3 - Movimiento/Consumo de tarjeta
