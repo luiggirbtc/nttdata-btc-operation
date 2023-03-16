@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.nttdata.btc.operation.app.util.constant.Constants.DEFAULT_FALSE;
-import static com.nttdata.btc.operation.app.util.constant.Constants.DEFAULT_MESSAGE_ERROR;
+import static com.nttdata.btc.operation.app.util.constant.Constants.*;
 import static com.nttdata.btc.operation.app.util.enums.CategoryOperationEnum.findOperationCategory;
 import static com.nttdata.btc.operation.app.util.enums.TypeOperationEnum.findOperationType;
 
@@ -56,7 +54,7 @@ public class OperationServiceImpl implements OperationService {
     public Flux<OperationResponse> findAll() {
         return repository.findAll().filter(Operation::isStatus)
                 .map(c -> buildOperationR.apply(c))
-                .onErrorResume(e -> Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
+                .onErrorResume(e -> Flux.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
     /**
@@ -70,7 +68,7 @@ public class OperationServiceImpl implements OperationService {
         return repository.findById(id)
                 .filter(Operation::isStatus)
                 .map(e -> buildOperationR.apply(e))
-                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
+                .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
     /**
@@ -80,10 +78,11 @@ public class OperationServiceImpl implements OperationService {
      */
     @Override
     public Flux<OperationResponse> findBySourceAcc(String code) {
-        log.info("Start impl findBySourceAcc :: " + code);
-        return repository.findBy(code)
+        return (code.contains(DEFAULT_EMPTY)) ? Flux.error(customException(HttpStatus.BAD_REQUEST,
+                HttpStatus.BAD_REQUEST.getReasonPhrase())) : repository.findPositionalParameters(code)
                 .map(entity -> operationMapper.toResponse(entity))
-                .onErrorResume(e -> Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
+                .onErrorResume(e -> Flux.error(customException(HttpStatus.NOT_FOUND,
+                        HttpStatus.NOT_FOUND.getReasonPhrase())));
     }
 
     /**
@@ -96,7 +95,7 @@ public class OperationServiceImpl implements OperationService {
     public Mono<OperationResponse> save(OperationRequest request) {
         return repository.save(buildOperation.apply(request))
                 .flatMap(entity -> Mono.just(buildOperationR.apply(entity)))
-                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
+                .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
     /**
@@ -110,7 +109,7 @@ public class OperationServiceImpl implements OperationService {
         return repository.findById(id).filter(Operation::isStatus)
                 .map(e -> updateStatus.apply(e, DEFAULT_FALSE))
                 .flatMap(e -> repository.delete(e))
-                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
+                .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
     /**
@@ -125,7 +124,7 @@ public class OperationServiceImpl implements OperationService {
                 .map(entity -> updateOperation.apply(request, entity))
                 .flatMap(operation -> repository.save(operation))
                 .flatMap(aupdated -> Mono.just(buildOperationR.apply(aupdated)))
-                .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, DEFAULT_MESSAGE_ERROR)));
+                .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
     /**
@@ -177,4 +176,15 @@ public class OperationServiceImpl implements OperationService {
         response.setStatus(entity.isStatus());
         return response;
     };
+
+    /**
+     * Method CUSTOM exception.
+     *
+     * @param status  {@link HttpStatus}
+     * @param message {@link String}
+     * @return {@link ResponseStatusException}
+     */
+    private ResponseStatusException customException(HttpStatus status, String message) {
+        return new ResponseStatusException(status, message);
+    }
 }

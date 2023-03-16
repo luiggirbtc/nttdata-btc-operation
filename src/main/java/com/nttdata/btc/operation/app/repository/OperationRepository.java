@@ -16,9 +16,9 @@ public interface OperationRepository extends ReactiveMongoRepository<Operation, 
     /**
      * Method find by source account.
      *
-     * @param source_account {@link String}
+     * @param parameter1 {@link String}
      * @return {@link Operation}
      */
-    @Query("mongo query")
-    Flux<Operation> findBy(String source_account);
+    @Query("{'source_account' : ?0")
+    Flux<Operation> findPositionalParameters(String parameter1);
 }

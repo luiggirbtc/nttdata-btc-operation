@@ -47,7 +47,7 @@ public class OperationController {
      * @return {@link OperationResponse}
      */
     @GetMapping("code/{code}")
-    public Flux<OperationResponse> findOperationBySourceAcc(@PathVariable final String code) {
+    public Flux<OperationResponse> findOperationBySourceAcc(@PathVariable String code) {
         log.info("Start findOperationBySourceAcc.");
         return service.findBySourceAcc(code);
     }
