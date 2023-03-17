@@ -54,7 +54,7 @@ public class OperationServiceImpl implements OperationService {
     public Flux<OperationResponse> findAll() {
         return repository.findAll().filter(Operation::isStatus)
                 .map(c -> buildOperationR.apply(c))
-                .onErrorResume(e -> Flux.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
+                .onErrorResume(e -> Flux.error(customException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())));
     }
 
     /**
@@ -65,9 +65,7 @@ public class OperationServiceImpl implements OperationService {
      */
     @Override
     public Mono<OperationResponse> findById(String id) {
-        return repository.findById(id)
-                .filter(Operation::isStatus)
-                .map(e -> buildOperationR.apply(e))
+        return repository.findById(id).filter(Operation::isStatus).map(this::validate)
                 .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
@@ -79,8 +77,9 @@ public class OperationServiceImpl implements OperationService {
     @Override
     public Flux<OperationResponse> findBySourceAcc(String code) {
         return (code.contains(DEFAULT_EMPTY)) ? Flux.error(customException(HttpStatus.BAD_REQUEST,
-                HttpStatus.BAD_REQUEST.getReasonPhrase())) : repository.findPositionalParameters(code)
-                .map(entity -> operationMapper.toResponse(entity))
+                HttpStatus.BAD_REQUEST.getReasonPhrase())) : repository.findAll()
+                .filter(oList -> code.equalsIgnoreCase(oList.getSource_account()))
+                .map(this::validate)
                 .onErrorResume(e -> Flux.error(customException(HttpStatus.NOT_FOUND,
                         HttpStatus.NOT_FOUND.getReasonPhrase())));
     }
@@ -109,7 +108,7 @@ public class OperationServiceImpl implements OperationService {
         return repository.findById(id).filter(Operation::isStatus)
                 .map(e -> updateStatus.apply(e, DEFAULT_FALSE))
                 .flatMap(e -> repository.delete(e))
-                .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
+                .onErrorResume(e -> Mono.error(customException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())));
     }
 
     /**
@@ -125,6 +124,22 @@ public class OperationServiceImpl implements OperationService {
                 .flatMap(operation -> repository.save(operation))
                 .flatMap(aupdated -> Mono.just(buildOperationR.apply(aupdated)))
                 .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
+    }
+
+    /**
+     * Method validate entity operation.
+     *
+     * @param valor {@link Operation}
+     * @return {@link OperationResponse}
+     */
+    private OperationResponse validate(Operation valor) {
+        if (null != valor.getSource_account()) {
+            log.info("successful");
+            return buildOperationR.apply(valor);
+        } else {
+            log.error("Not Found");
+            throw customException(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase());
+        }
     }
 
     /**
