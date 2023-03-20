@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,8 @@ import reactor.core.publisher.Mono;
  * @author lrs
  */
 @Slf4j
-@RestController(value = "Operation")
+@Tag(name = "Operation")
+@RestController
 @RequestMapping("/api/v1/operation")
 public class OperationController {
     /**
@@ -46,8 +48,9 @@ public class OperationController {
                             schema = @Schema(implementation = OperationResponse.class))}),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content)})
-    @GetMapping("id/{id}")
+    @GetMapping(value = "id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<OperationResponse>> findOperationById(@PathVariable final String id) {
+        log.info("Start service findOperationById.");
         return service.findById(id)
                 .map(c -> new ResponseEntity<>(c, HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -66,9 +69,9 @@ public class OperationController {
                             schema = @Schema(implementation = OperationResponse.class))}),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content)})
-    @GetMapping("code/{code}")
+    @GetMapping(value = "code/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<OperationResponse> findOperationBySourceAcc(@PathVariable final String code) {
-        log.info("Start findOperationBySourceAcc.");
+        log.info("Start service findOperationBySourceAcc.");
         return service.findBySourceAcc(code);
     }
 
@@ -85,9 +88,9 @@ public class OperationController {
                             schema = @Schema(implementation = OperationResponse.class))}),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)})
-    @PostMapping("/")
+    @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<OperationResponse>> createOperation(@RequestBody final OperationRequest request) {
-        log.info("Start CreateOperation.");
+        log.info("Start service CreateOperation.");
         return service.save(request)
                 .map(p -> new ResponseEntity<>(p, HttpStatus.CREATED))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
@@ -106,7 +109,7 @@ public class OperationController {
                             schema = @Schema(implementation = OperationResponse.class))}),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)})
-    @PutMapping("/")
+    @PutMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<OperationResponse>> updateOperation(@RequestBody final UpdateOperationRequest request) {
         log.info("Start UpdateOperation.");
         return service.update(request)
@@ -126,7 +129,7 @@ public class OperationController {
                             schema = @Schema(implementation = OperationResponse.class))}),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)})
-    @GetMapping("/")
+    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<OperationResponse> findAllOperations() {
         log.info("Start findAll Operations.");
         return service.findAll()
