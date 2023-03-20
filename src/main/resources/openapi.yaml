@@ -1,0 +1,285 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://localhost:8086
+    description: Generated server url
+tags:
+  - name: Operation
+paths:
+  /api/v1/operation/:
+    get:
+      tags:
+        - Operation
+      summary: Get all operations
+      operationId: findAllOperations
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+    put:
+      tags:
+        - Operation
+      summary: Update operation
+      operationId: updateOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOperationRequest'
+        required: true
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+    post:
+      tags:
+        - Operation
+      summary: Create a new operation
+      operationId: createOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperationRequest'
+        required: true
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+  /api/v1/operation/id/{id}:
+    get:
+      tags:
+        - Operation
+      summary: Get a operation by id
+      operationId: findOperationById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Found operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not found
+  /api/v1/operation/code/{code}:
+    get:
+      tags:
+        - Operation
+      summary: Get a operations by source account
+      operationId: findOperationBySourceAcc
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Found operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not found
+  /api/v1/operation/{id}:
+    delete:
+      tags:
+        - Operation
+      summary: Delete operation
+      operationId: deleteOperation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json: {}
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    UpdateOperationRequest:
+      required:
+        - amount
+        - category
+        - currency
+        - id_operation
+        - source_account
+        - target_account
+        - type
+      type: object
+      properties:
+        category:
+          type: string
+          description: Category operation
+          format: byte
+        type:
+          type: string
+          description: Type operation
+          format: byte
+        description:
+          type: string
+          description: Description operation
+          example: Pago factura.
+        source_account:
+          type: string
+          description: Code source account
+          example: 640cc29c60650d1637e040a90
+        target_account:
+          type: string
+          description: Code target account
+          example: 123-1234567-0-00
+        currency:
+          type: string
+          description: Currency operation
+          example: PEN | USD
+        amount:
+          type: number
+          description: Amount operation
+          example: 250
+        id_operation:
+          type: string
+          description: Id operation
+          example: 120cf999662f294fc1234567
+    OperationResponse:
+      required:
+        - amount
+        - category
+        - categoryDescription
+        - currency
+        - id_operation
+        - register_date
+        - source_account
+        - status
+        - target_account
+        - type
+        - typeDescription
+      type: object
+      properties:
+        category:
+          type: string
+          description: Category operation
+          format: byte
+        type:
+          type: string
+          description: Type operation
+          format: byte
+        description:
+          type: string
+          description: Description operation
+          example: Pago factura.
+        source_account:
+          type: string
+          description: Code source account
+          example: 640cc29c60650d1637e040a90
+        target_account:
+          type: string
+          description: Code target account
+          example: 123-1234567-0-00
+        currency:
+          type: string
+          description: Currency operation
+          example: PEN | USD
+        amount:
+          type: number
+          description: Amount operation
+          example: 250
+        id_operation:
+          type: string
+          description: Id operation
+          example: 120cf999662f294fc1234567
+        register_date:
+          type: string
+          description: Register date
+          format: date-time
+          example: '2023-03-11T21:58:49.101Z'
+        status:
+          type: boolean
+          description: Status operation
+          example: true
+        typeDescription:
+          type: string
+          description: Type description
+          example: Depósito
+        categoryDescription:
+          type: string
+          description: Category description
+          example: Pago crédito
+    OperationRequest:
+      required:
+        - amount
+        - category
+        - currency
+        - source_account
+        - target_account
+        - type
+      type: object
+      properties:
+        category:
+          type: string
+          description: Category operation
+          format: byte
+        type:
+          type: string
+          description: Type operation
+          format: byte
+        description:
+          type: string
+          description: Description operation
+          example: Pago factura.
+        source_account:
+          type: string
+          description: Code source account
+          example: 640cc29c60650d1637e040a90
+        target_account:
+          type: string
+          description: Code target account
+          example: 123-1234567-0-00
+        currency:
+          type: string
+          description: Currency operation
+          example: PEN | USD
+        amount:
+          type: number
+          description: Amount operation
+          example: 250
