@@ -21,7 +21,8 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.nttdata.btc.operation.app.util.constant.Constants.*;
+import static com.nttdata.btc.operation.app.util.constant.Constants.DEFAULT_EMPTY;
+import static com.nttdata.btc.operation.app.util.constant.Constants.DEFAULT_FALSE;
 import static com.nttdata.btc.operation.app.util.enums.CategoryOperationEnum.findOperationCategory;
 import static com.nttdata.btc.operation.app.util.enums.TypeOperationEnum.findOperationType;
 
