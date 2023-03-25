@@ -20,6 +20,7 @@
 		<java.version>1.8</java.version>
 		<lombok.version>1.18.26</lombok.version>
 		<spring-cloud.version>2021.0.6</spring-cloud.version>
+		<sonar.exclusions>**/app/model/**/*.java</sonar.exclusions>
 	</properties>
 
 	<dependencies>

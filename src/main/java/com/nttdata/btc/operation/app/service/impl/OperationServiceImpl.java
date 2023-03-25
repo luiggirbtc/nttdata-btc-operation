@@ -54,7 +54,7 @@ public class OperationServiceImpl implements OperationService {
     @Override
     public Flux<OperationResponse> findAll() {
         return repository.findAll().filter(Operation::isStatus)
-                .map(c -> buildOperationR.apply(c))
+                .map(entity -> operationMapper.toResponse(entity))
                 .onErrorResume(e -> Flux.error(customException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())));
     }
 
@@ -94,7 +94,7 @@ public class OperationServiceImpl implements OperationService {
     @Override
     public Mono<OperationResponse> save(OperationRequest request) {
         return repository.save(buildOperation.apply(request))
-                .flatMap(entity -> Mono.just(buildOperationR.apply(entity)))
+                .flatMap(entity -> Mono.just(operationMapper.toResponse(entity)))
                 .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
