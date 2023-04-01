@@ -12,9 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,11 +54,9 @@ public class OperationController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content)})
     @GetMapping(value = "id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<OperationResponse>> findOperationById(@PathVariable final String id) {
+    public Mono<OperationResponse> findOperationById(@PathVariable final String id) {
         log.info("Start service findOperationById.");
-        return service.findById(id)
-                .map(c -> new ResponseEntity<>(c, HttpStatus.OK))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return service.findById(id);
     }
 
     /**
@@ -96,11 +92,9 @@ public class OperationController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)})
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<OperationResponse>> createOperation(@RequestBody final OperationRequest request) {
+    public Mono<OperationResponse> createOperation(@RequestBody final OperationRequest request) {
         log.info("Start service CreateOperation.");
-        return service.save(request)
-                .map(p -> new ResponseEntity<>(p, HttpStatus.CREATED))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        return service.save(request);
     }
 
     /**
@@ -117,11 +111,9 @@ public class OperationController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)})
     @PutMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<OperationResponse>> updateOperation(@RequestBody final UpdateOperationRequest request) {
+    public Mono<OperationResponse> updateOperation(@RequestBody final UpdateOperationRequest request) {
         log.info("Start UpdateOperation.");
-        return service.update(request)
-                .map(response -> new ResponseEntity<>(response, HttpStatus.OK))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+        return service.update(request);
     }
 
     /**
@@ -157,9 +149,7 @@ public class OperationController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)})
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> deleteOperation(@PathVariable(value = "id") final String id) {
-        return service.delete(id)
-                .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK)))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public Mono<Void> deleteOperation(@PathVariable(value = "id") final String id) {
+        return service.delete(id);
     }
 }

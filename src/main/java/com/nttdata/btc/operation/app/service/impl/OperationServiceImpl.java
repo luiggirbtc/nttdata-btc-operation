@@ -1,5 +1,6 @@
 package com.nttdata.btc.operation.app.service.impl;
 
+import com.nttdata.btc.operation.app.cache.RedisRepository;
 import com.nttdata.btc.operation.app.model.entity.Operation;
 import com.nttdata.btc.operation.app.model.request.OperationRequest;
 import com.nttdata.btc.operation.app.model.request.UpdateOperationRequest;
@@ -40,6 +41,9 @@ public class OperationServiceImpl implements OperationService {
     @Autowired
     private OperationRepository repository;
 
+    @Autowired
+    private RedisRepository redis;
+
     /**
      * Reference interface OperationResponseMapper.
      */
@@ -55,7 +59,9 @@ public class OperationServiceImpl implements OperationService {
     public Flux<OperationResponse> findAll() {
         return repository.findAll().filter(Operation::isStatus)
                 .map(entity -> operationMapper.toResponse(entity))
-                .onErrorResume(e -> Flux.error(customException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())));
+                .flatMap(response -> Flux.just(redis.save(operationMapper.toRedis(response))).map(redis -> response))
+                .onErrorResume(e -> Flux.error(customException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())));
     }
 
     /**
@@ -66,7 +72,8 @@ public class OperationServiceImpl implements OperationService {
      */
     @Override
     public Mono<OperationResponse> findById(String id) {
-        return repository.findById(id).filter(Operation::isStatus).map(this::validate)
+        return Mono.just(redis.findById(id)).flatMap(redis -> (null != redis.getId_operation()) ? Mono.just(
+                operationMapper.redisToResponse(redis)) : repository.findById(id).filter(Operation::isStatus).map(this::validate))
                 .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
@@ -107,8 +114,9 @@ public class OperationServiceImpl implements OperationService {
     @Override
     public Mono<Void> delete(String id) {
         return repository.findById(id).filter(Operation::isStatus)
-                .map(e -> updateStatus.apply(e, DEFAULT_FALSE))
-                .flatMap(e -> repository.delete(e))
+                .map(entity -> updateStatus.apply(entity, DEFAULT_FALSE))
+                .flatMap(updated -> repository.save(updated))
+                .then()
                 .onErrorResume(e -> Mono.error(customException(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())));
     }
 
