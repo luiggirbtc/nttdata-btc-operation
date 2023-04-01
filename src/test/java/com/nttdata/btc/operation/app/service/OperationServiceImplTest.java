@@ -25,15 +25,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class OperationServiceImplTest {
+class OperationServiceImplTest {
 
     @Mock
     OperationRepository repository;
@@ -68,7 +66,7 @@ public class OperationServiceImplTest {
 
     @Test
     @DisplayName("Return all operations")
-    public void testFindAllOperations() {
+    void testFindAllOperations() {
         when(repository.findAll()).thenReturn(Flux.fromIterable(listOperation));
         when(redis.save(any())).thenReturn(new RedisOperation());
         Flux<OperationResponse> result = service.findAll();
@@ -78,7 +76,7 @@ public class OperationServiceImplTest {
 
     @Test
     @DisplayName("Return error while get all operations")
-    public void testFindAllOperationsErrorRedis() {
+    void testFindAllOperationsErrorRedis() {
         when(repository.findAll()).thenReturn(Flux.fromIterable(listOperation));
         when(redis.save(any())).thenReturn(null);
         Flux<OperationResponse> result = service.findAll();
@@ -90,27 +88,27 @@ public class OperationServiceImplTest {
 
     @Test
     @DisplayName("Return operations by id")
-    public void testFindById() {
+    void testFindById() {
         when(repository.findById(anyString())).thenReturn(Mono.just(listOperation.get(0)));
         when(redis.findById(anyString())).thenReturn(new RedisOperation());
         Mono<OperationResponse> result = service.findById(ID_OPERATION);
 
-        assertEquals(result.block().getId_operation(), ID_OPERATION);
+        assertEquals(ID_OPERATION, result.block().getId_operation());
     }
 
     @Test
     @DisplayName("Return operations by source account")
-    public void testFindBySourceAcc() {
+    void testFindBySourceAcc() {
         when(repository.findAll()).thenReturn(Flux.fromIterable(listOperation));
 
         Flux<OperationResponse> result = service.findBySourceAcc(SOURCE_ACCOUNT_CODE);
 
-        assertEquals(result.blockFirst().getSource_account(), SOURCE_ACCOUNT_CODE);
+        assertEquals(SOURCE_ACCOUNT_CODE, result.blockFirst().getSource_account());
     }
 
     @Test
     @DisplayName("Create a new operation")
-    public void testSave() {
+    void testSave() {
         when(repository.save(any())).thenReturn(Mono.just(listOperation.get(0)));
 
         OperationRequest request = new OperationRequest();
@@ -124,24 +122,25 @@ public class OperationServiceImplTest {
 
         Mono<OperationResponse> result = service.save(request);
 
-        assertEquals(result.block().getSource_account(), SOURCE_ACCOUNT_CODE);
+        assertEquals(SOURCE_ACCOUNT_CODE, result.block().getSource_account());
     }
 
     @Test
     @DisplayName("Delete operation")
-    public void testDelete() {
+    void testDelete() {
         Operation operation = listOperation.get(0);
 
         when(repository.findById(anyString())).thenReturn(Mono.just(operation));
+        when(repository.save(any())).thenReturn(Mono.just(operation));
 
-        Mono<Void> result = service.delete(ID_OPERATION);
+        Mono<Boolean> result = service.delete(ID_OPERATION).thenReturn(Boolean.TRUE);
 
-        assertThat(result);
+        assertTrue(result.block());
     }
 
     @Test
     @DisplayName("Update operation")
-    public void testUpdate() {
+    void testUpdate() {
         Operation operation = listOperation.get(0);
         when(repository.findById(anyString())).thenReturn(Mono.just(operation));
         when(repository.save(any())).thenReturn(Mono.just(operation));

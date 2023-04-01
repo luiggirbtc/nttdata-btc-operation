@@ -19,13 +19,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class OperationControllerTest {
+class OperationControllerTest {
     @InjectMocks
     OperationController controller;
 
@@ -53,7 +53,7 @@ public class OperationControllerTest {
 
     @Test
     @DisplayName("Return all operations")
-    public void testFindAllOperations() {
+    void testFindAllOperations() {
         when(service.findAll()).thenReturn(Flux.fromIterable(listOperation));
 
         Flux<OperationResponse> result = controller.findAllOperations();
@@ -62,7 +62,7 @@ public class OperationControllerTest {
     }
 
     @Test
-    public void testCreateOperation() {
+    void testCreateOperation() {
         OperationResponse response = listOperation.get(0);
 
         OperationRequest request = new OperationRequest();
@@ -82,7 +82,7 @@ public class OperationControllerTest {
     }
 
     @Test
-    public void testUpdateOperation() {
+    void testUpdateOperation() {
         UpdateOperationRequest updateRequest = new UpdateOperationRequest();
         updateRequest.setId_operation("640cf999662f294fc9169737");
         updateRequest.setCategory(Byte.parseByte("2"));
@@ -104,7 +104,7 @@ public class OperationControllerTest {
     }
 
     @Test
-    public void testFindOperationBySourceAcc() {
+    void testFindOperationBySourceAcc() {
         String sourceAccount = "640cc29c60650d1637e040a9";
         when(service.findBySourceAcc(anyString())).thenReturn(Flux.fromIterable(listOperation));
 
@@ -114,7 +114,7 @@ public class OperationControllerTest {
     }
 
     @Test
-    public void testFindOperationById() {
+    void testFindOperationById() {
         String id = "640cf999662f294fc9169737";
         when(service.findById(anyString())).thenReturn(Mono.just(listOperation.get(0)));
 
@@ -124,11 +124,13 @@ public class OperationControllerTest {
     }
 
     @Test
-    public void testDeleteOperation() {
+    void testDeleteOperation() {
         String id = "640cf999662f294fc9169737";
 
         when(service.delete(anyString())).thenReturn(Mono.empty());
 
-        assertThat(controller.deleteOperation(id));
+        Mono<Boolean> result = controller.deleteOperation(id).thenReturn(Boolean.TRUE);
+
+        assertTrue(result.block());
     }
 }

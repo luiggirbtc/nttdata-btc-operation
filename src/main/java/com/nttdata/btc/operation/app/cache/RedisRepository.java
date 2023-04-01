@@ -1,5 +1,6 @@
 package com.nttdata.btc.operation.app.cache;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,7 @@ public class RedisRepository {
     }
 
     public boolean delete() {
-        redisTemplate.getConnectionFactory().getConnection().flushAll();
+        Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushAll();
         return true;
     }
 }

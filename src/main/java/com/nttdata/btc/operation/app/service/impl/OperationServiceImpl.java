@@ -59,7 +59,7 @@ public class OperationServiceImpl implements OperationService {
     public Flux<OperationResponse> findAll() {
         return repository.findAll().filter(Operation::isStatus)
                 .map(entity -> operationMapper.toResponse(entity))
-                .flatMap(response -> Flux.just(redis.save(operationMapper.toRedis(response))).map(redis -> response))
+                .flatMap(response -> Flux.just(redis.save(operationMapper.toRedis(response))).map(beanCache -> response))
                 .onErrorResume(e -> Flux.error(customException(HttpStatus.INTERNAL_SERVER_ERROR,
                         HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())));
     }
@@ -72,8 +72,8 @@ public class OperationServiceImpl implements OperationService {
      */
     @Override
     public Mono<OperationResponse> findById(String id) {
-        return Mono.just(redis.findById(id)).flatMap(redis -> (null != redis.getId_operation()) ? Mono.just(
-                operationMapper.redisToResponse(redis)) : repository.findById(id).filter(Operation::isStatus).map(this::validate))
+        return Mono.just(redis.findById(id)).flatMap(beanCache -> (null != beanCache.getId_operation()) ? Mono.just(
+                operationMapper.redisToResponse(beanCache)) : repository.findById(id).filter(Operation::isStatus).map(this::validate))
                 .onErrorResume(e -> Mono.error(customException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase())));
     }
 
